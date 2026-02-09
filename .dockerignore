@@ -1,0 +1,31 @@
+# Maven/Java
+target/
+*.jar
+*.war
+*.ear
+
+# Node/Frontend
+node_modules/
+dist/
+.npm/
+
+# IDEs and OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# Logs and temp
+*.log
+tmp/
+temp/

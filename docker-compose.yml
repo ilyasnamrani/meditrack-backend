@@ -1,0 +1,259 @@
+services:
+  meditrack-keycloak:
+    image: quay.io/keycloak/keycloak:23.0.0
+    container_name: meditrack-keycloak
+    ports:
+      - "9090:9090"
+    environment:
+      - KEYCLOAK_ADMIN=ilias
+      - KEYCLOAK_ADMIN_PASSWORD=ilias2026
+    command: start-dev --import-realm --http-port=9090
+    volumes:
+      - ./realm-export.json:/opt/keycloak/data/import/realm.json
+    networks:
+      - meditrack-net
+    healthcheck:
+      test: [ "CMD-SHELL", "exec 3<>/dev/tcp/localhost/9090 || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  discovery-service:
+    build:
+      context: ./discovery-service
+      dockerfile: Dockerfile
+    image: meditrack/discovery-service
+    container_name: discovery-service
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+    networks:
+      - meditrack-net
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8761/actuator/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  config-service:
+    build:
+      context: ./config-service
+      dockerfile: Dockerfile
+    image: meditrack/config-service
+    container_name: config-service
+    ports:
+      - "9999:9999"
+    environment:
+      - SPRING_PROFILES_ACTIVE=native
+      - EUREKA_URI=http://discovery-service:8761/eureka/
+      - SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS=file:/var/config-repo
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+    networks:
+      - meditrack-net
+    volumes:
+      - ./config-repo:/var/config-repo
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9999/actuator/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  gateway-service:
+    build:
+      context: ./gateway-service
+      dockerfile: Dockerfile
+    image: meditrack/gateway-service
+    container_name: gateway-service
+    ports:
+      - "8888:8888"
+    environment:
+      - EUREKA_URI=http://discovery-service:8761/eureka/
+      - CONFIG_SERVER_URL=http://config-service:9999/
+      - KEYCLOAK_URL=http://meditrack-keycloak:9090
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
+      meditrack-keycloak:
+        condition: service_healthy
+    networks:
+      - meditrack-net
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8888/actuator/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  ms-auth:
+    build:
+      context: ./ms-auth
+      dockerfile: Dockerfile
+    image: meditrack/ms-auth
+    container_name: ms-auth
+    ports:
+      - "8081:8081"
+    environment:
+      - EUREKA_URI=http://discovery-service:8761/eureka/
+      - CONFIG_SERVER_URL=http://config-service:9999/
+      - KEYCLOAK_URL=http://meditrack-keycloak:9090
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
+      meditrack-keycloak:
+        condition: service_healthy
+
+    networks:
+      - meditrack-net
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8081/actuator/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  ms-patient:
+    build:
+      context: ./ms-patient
+      dockerfile: Dockerfile
+    image: meditrack/ms-patient
+    container_name: ms-patient
+    ports:
+      - "8082:8082"
+    environment:
+      - EUREKA_URI=http://discovery-service:8761/eureka/
+      - CONFIG_SERVER_URL=http://config-service:9999/
+      - KEYCLOAK_URL=http://meditrack-keycloak:9090
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
+      meditrack-keycloak:
+        condition: service_healthy
+
+    networks:
+      - meditrack-net
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8082/actuator/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  ms-planning:
+    build:
+      context: ./ms-planning
+      dockerfile: Dockerfile
+    image: meditrack/ms-planning
+    container_name: ms-planning
+    ports:
+      - "8083:8083"
+    environment:
+      - EUREKA_URI=http://discovery-service:8761/eureka/
+      - CONFIG_SERVER_URL=http://config-service:9999/
+      - KEYCLOAK_URL=http://meditrack-keycloak:9090
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
+      ms-auth:
+        condition: service_started
+      ms-patient:
+        condition: service_started
+    networks:
+      - meditrack-net
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8083/actuator/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  ms-alert:
+    build:
+      context: ./ms-alert
+      dockerfile: Dockerfile
+    image: meditrack/ms-alert
+    container_name: ms-alert
+    ports:
+      - "8084:8084"
+    environment:
+      - EUREKA_URI=http://discovery-service:8761/eureka/
+      - CONFIG_SERVER_URL=http://config-service:9999/
+      - KEYCLOAK_URL=http://meditrack-keycloak:9090
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
+      meditrack-keycloak:
+        condition: service_healthy
+    networks:
+      - meditrack-net
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8084/actuator/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  ms-billing:
+    build:
+      context: ./ms-billing
+      dockerfile: Dockerfile
+    image: meditrack/ms-billing
+    container_name: ms-billing
+    ports:
+      - "8085:8085"
+    environment:
+      - EUREKA_URI=http://discovery-service:8761/eureka/
+      - CONFIG_SERVER_URL=http://config-service:9999/
+      - KEYCLOAK_URL=http://meditrack-keycloak:9090
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
+      meditrack-keycloak:
+        condition: service_healthy
+    networks:
+      - meditrack-net
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8085/actuator/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  meditrack-frontend:
+    build: ./meditrack-frontend
+    image: meditrack/frontend
+    container_name: meditrack-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      gateway-service:
+        condition: service_healthy
+    networks:
+      - meditrack-net
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost/health || exit 1" ]
+      interval: 30s
+      timeout: 3s
+      retries: 5
+      start_period: 40s
+
+networks:
+  meditrack-net:
+    driver: bridge

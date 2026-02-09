@@ -1,0 +1,67 @@
+{
+    "realm": "meditrack-realm",
+    "enabled": true,
+    "browserSecurityHeaders": {
+        "contentSecurityPolicy": "frame-ancestors 'self' http://localhost:3000 http://localhost:5173",
+        "xFrameOptions": "ALLOW-FROM http://localhost:3000"
+    },
+    "roles": {
+        "realm": [
+            {
+                "name": "ADMIN",
+                "description": ""
+            },
+            {
+                "name": "DOCTOR",
+                "description": ""
+            },
+            {
+                "name": "NURSE",
+                "description": ""
+            },
+            {
+                "name": "SECRETARY",
+                "description": ""
+            },
+            {
+                "name": "PATIENT",
+                "description": ""
+            }
+        ]
+    },
+    "clients": [
+        {
+            "clientId": "meditrack-client",
+            "enabled": true,
+            "secret": "3SYHxXpFPLcNHipsPCKE0RXB88VcuUJG",
+            "publicClient": false,
+            "bearerOnly": false,
+            "standardFlowEnabled": true,
+            "serviceAccountsEnabled": true,
+            "directAccessGrantsEnabled": true,
+            "authorizationServicesEnabled": true,
+            "fullScopeAllowed": true,
+            "redirectUris": [
+                "*"
+            ],
+            "webOrigins": [
+                "*"
+            ]
+        }
+    ],
+    "users": [
+        {
+            "username": "service-account-meditrack-client",
+            "enabled": true,
+            "serviceAccountClientId": "meditrack-client",
+            "clientRoles": {
+                "realm-management": [
+                    "manage-users",
+                    "view-users",
+                    "query-users",
+                    "assign-roles"
+                ]
+            }
+        }
+    ]
+}

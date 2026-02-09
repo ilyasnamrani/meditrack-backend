@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="config-service" />
+        <module name="ms-auth" />
+        <module name="ms-patient" />
+        <module name="ms-planning" />
+        <module name="ms-alert" />
+        <module name="gateway-service" />
+        <module name="ms-billing" />
+        <module name="discovery-service" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="config-service" options="" />
+      <module name="discovery-service" options="" />
+      <module name="gateway-service" options="" />
+      <module name="ms-alert" options="-parameters" />
+      <module name="ms-auth" options="-parameters" />
+      <module name="ms-billing" options="-parameters" />
+      <module name="ms-patient" options="-parameters" />
+      <module name="ms-planning" options="-parameters" />
+    </option>
+  </component>
+</project>

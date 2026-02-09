@@ -1,0 +1,59 @@
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import LandingPage from './pages/LandingPage';
+import StaffDashboard from './pages/StaffDashboard';
+import StaffPatients from './pages/StaffPatients';
+import PatientDashboard from './pages/PatientDashboard';
+import PatientLogin from './pages/PatientLogin';
+import Register from './pages/Register';
+import RoleRedirect from './components/RoleRedirect';
+import { isLoggedIn } from './services/keycloak';
+
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  if (!isLoggedIn()) {
+    return <Navigate to="/" />;
+  }
+  return children;
+};
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/patient/login" element={<PatientLogin />} />
+        <Route path="/redirect" element={<RoleRedirect />} />
+
+        <Route
+          path="/staff"
+          element={
+            <ProtectedRoute>
+              <StaffDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff/patients"
+          element={
+            <ProtectedRoute>
+              <StaffPatients />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/patient/*"
+          element={
+            <ProtectedRoute>
+              <PatientDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </Router>
+  );
+}
+
+export default App;
