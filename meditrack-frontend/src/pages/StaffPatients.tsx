@@ -226,9 +226,31 @@ const StaffPatients = () => {
             </div>
 
             <style>{`
-        .page-header { margin-bottom: 2rem; }
+        .page-header { 
+          margin-bottom: 2rem; 
+          display: flex; 
+          justify-content: space-between; 
+          align-items: center; 
+        }
         .page-header h1 { font-size: 1.8rem; font-weight: 700; color: var(--foreground); }
         .page-header p { color: var(--muted-foreground); }
+        
+        .create-btn {
+          background: var(--primary);
+          color: white;
+          padding: 0.75rem 1.5rem;
+          border-radius: var(--radius-md);
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          box-shadow: var(--shadow-sm);
+          transition: all 0.2s;
+        }
+        .create-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: var(--shadow-md);
+        }
 
         .search-bar {
           background: white;

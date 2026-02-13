@@ -1,16 +1,14 @@
 package com.example.msauth.service;
 
 import jakarta.ws.rs.core.Response;
+import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
-import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.util.Collections;
 
 @Service
 public class KeycloakService {
@@ -50,15 +48,21 @@ public class KeycloakService {
             UserResource userResource = usersResource.get(userId);
 
             try {
-                // 1. Assign Role
                 /*
+                 * COMMENTED OUT: Manual role assignment requested
                  * if (role != null && !role.isEmpty()) {
+                 * try {
                  * // This will throw a 404 Not Found if the role name doesn't exist in Keycloak
                  * RoleRepresentation realmRole =
                  * keycloak.realm(realm).roles().get(role).toRepresentation();
-                 * 
                  * userResource.roles().realmLevel().add(Collections.singletonList(realmRole));
-                 * System.out.println("Role " + role + " assigned to user " + userId);
+                 * System.out.println("Role " + role + " (ID: " + realmRole.getId() +
+                 * ") assigned to user " + userId);
+                 * } catch (Exception roleEx) {
+                 * System.err.println("Failed to fetch or assign role " + role + ": " +
+                 * roleEx.getMessage());
+                 * throw new RuntimeException("Role assignment failed: " + roleEx.getMessage());
+                 * }
                  * }
                  */
 
@@ -126,15 +130,6 @@ public class KeycloakService {
         }
     }
 
-    // Helper to parse ID from Location header
-    private static class CreatedResponseUtil {
-        public static String getCreatedId(Response response) {
-            java.net.URI location = response.getLocation();
-            if (location == null) {
-                return null;
-            }
-            String path = location.getPath();
-            return path.substring(path.lastIndexOf('/') + 1);
-        }
-    }
+    // Removed custom CreatedResponseUtil as we now use
+    // org.keycloak.admin.client.CreatedResponseUtil
 }

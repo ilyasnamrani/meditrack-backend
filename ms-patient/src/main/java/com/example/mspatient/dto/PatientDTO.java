@@ -24,7 +24,6 @@ public class PatientDTO {
 
     private String phoneNumber;
 
-    @NotBlank(message = "Registration number is required")
     private String registrationNumber;
     private List<MedicalRecordDTO> medicalRecords;
 }

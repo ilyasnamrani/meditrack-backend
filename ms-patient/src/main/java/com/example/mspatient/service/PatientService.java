@@ -36,9 +36,18 @@ public class PatientService {
     }
 
     public PatientDTO getPatient(Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("Patient ID cannot be null");
+        }
         Patient patient = patientRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Patient not found"));
         return mapToPatientDTO(patient);
+    }
+
+    public PatientDTO findByRegistrationNumber(String registrationNumber) {
+        return patientRepository.findByRegistrationNumber(registrationNumber)
+                .map(this::mapToPatientDTO)
+                .orElse(null);
     }
 
     @Transactional
@@ -58,13 +67,22 @@ public class PatientService {
         // Default password or generated one. For simplicity, using "password" or
         // random.
         // In real app, send via email.
-        String tempPassword = "password";
-        try {
-            keycloakService.createPatientUser(registrationNumber, tempPassword, patient.getFirstName(),
-                    patient.getLastName(), patient.getEmail());
-        } catch (Exception e) {
-            throw new RuntimeException("Error creating patient user in Keycloak: " + e.getMessage());
-        }
+        // COMMENTED OUT: User requested no Keycloak account for patients, only local
+        // DB.
+        /*
+         * // Generate random password
+         * String tempPassword = java.util.UUID.randomUUID().toString().substring(0, 8);
+         * System.out.println("GENERATED PASSWORD FOR PATIENT " + registrationNumber +
+         * ": " + tempPassword);
+         * try {
+         * keycloakService.createPatientUser(registrationNumber, tempPassword,
+         * patient.getFirstName(),
+         * patient.getLastName(), patient.getEmail());
+         * } catch (Exception e) {
+         * throw new RuntimeException("Error creating patient user in Keycloak: " +
+         * e.getMessage());
+         * }
+         */
 
         Patient savedPatient = patientRepository.save(patient);
         return mapToPatientDTO(savedPatient);
@@ -76,6 +94,9 @@ public class PatientService {
 
     @Transactional
     public PatientDTO updatePatient(Long id, PatientDTO patientDTO) {
+        if (id == null) {
+            throw new IllegalArgumentException("Patient ID cannot be null");
+        }
         Patient patient = patientRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Patient not found"));
 
@@ -90,7 +111,7 @@ public class PatientService {
     }
 
     public void deletePatient(Long id) {
-        if (!patientRepository.existsById(id)) {
+        if (id == null || !patientRepository.existsById(id)) {
             throw new EntityNotFoundException("Patient not found with id: " + id);
         }
         patientRepository.deleteById(id);
@@ -98,6 +119,9 @@ public class PatientService {
 
     @Transactional
     public MedicalRecordDTO addMedicalRecord(Long patientId, MedicalRecordDTO recordDTO) {
+        if (patientId == null) {
+            throw new IllegalArgumentException("Patient ID cannot be null");
+        }
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new EntityNotFoundException("Patient not found"));
 

@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Activity, ShieldCheck, Users, ArrowRight } from 'lucide-react';
-import { doLogin, isLoggedIn } from '../services/keycloak';
+
 import { useNavigate } from 'react-router-dom';
 
 const LandingPage = () => {
@@ -37,7 +37,7 @@ const LandingPage = () => {
         </div>
         <div className="nav-links">
           <button onClick={() => navigate('/register?role=STAFF')} className="btn-ghost">S'inscrire (Staff)</button>
-          <button onClick={() => doLogin()} className="btn-outline">Connexion</button>
+          <button onClick={() => navigate('/staff/login')} className="btn-outline">Connexion</button>
         </div>
       </nav>
 
@@ -58,16 +58,16 @@ const LandingPage = () => {
 
           <motion.div className="cta-group" variants={itemVariants}>
             <button
-              onClick={() => navigate(isLoggedIn() ? '/patient' : '/patient/login')}
+              onClick={() => navigate('/patient/login')}
               className="btn-primary"
             >
-              {isLoggedIn() ? 'Mon Espace Santé' : 'Accès Patient'} <ArrowRight size={20} />
+              Accès Patient <ArrowRight size={20} />
             </button>
             <button
-              onClick={() => navigate(isLoggedIn() ? '/staff' : '/register?role=STAFF')}
+              onClick={() => navigate('/staff/login')}
               className="btn-secondary"
             >
-              {isLoggedIn() ? 'Tableau de Bord' : 'Espace Staff'} <ArrowRight size={20} />
+              Accès Staff <ArrowRight size={20} />
             </button>
           </motion.div>
         </motion.div>

@@ -24,11 +24,6 @@ public class KeycloakConfig {
 
     @Bean
     public Keycloak keycloak() {
-        System.out.println("DEBUG: serverUrl=" + serverUrl);
-        System.out.println("DEBUG: realm=" + realm);
-        System.out.println("DEBUG: clientId=" + clientId);
-        System.out.println("DEBUG: clientSecret=" + (clientSecret != null ? "****" : "null"));
-        System.out.println("DEBUG: grantType=" + OAuth2Constants.CLIENT_CREDENTIALS);
 
         return KeycloakBuilder.builder()
                 .serverUrl(serverUrl)

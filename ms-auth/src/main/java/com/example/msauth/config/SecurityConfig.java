@@ -43,6 +43,6 @@ public class SecurityConfig {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring().requestMatchers("/api/staff/register", "/api/staff/ping", "/error",
-                "/actuator/**");
+                "/actuator/**", "/h2-console/**");
     }
 }

@@ -47,6 +47,19 @@
             "webOrigins": [
                 "*"
             ]
+        },
+        {
+            "clientId": "meditrack-web",
+            "enabled": true,
+            "publicClient": true,
+            "standardFlowEnabled": true,
+            "directAccessGrantsEnabled": true,
+            "redirectUris": [
+                "*"
+            ],
+            "webOrigins": [
+                "*"
+            ]
         }
     ],
     "users": [

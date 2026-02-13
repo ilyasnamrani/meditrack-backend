@@ -8,8 +8,6 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-
 @Service
 public class KeycloakService {
 
@@ -23,7 +21,7 @@ public class KeycloakService {
     private String realm;
 
     public String createPatientUser(String registrationNumber, String password, String firstName, String lastName,
-                                    String email) {
+            String email) {
         UserRepresentation user = new UserRepresentation();
         user.setEnabled(true);
         user.setUsername(registrationNumber); // Registration Number is the username
@@ -51,21 +49,28 @@ public class KeycloakService {
 
             usersResource.get(userId).resetPassword(passwordCred);
 
-            // Assign Realm Role "PATIENT"
-            try {
-                // Get the RoleRepresentation from the realm
-                // Note: The role "PATIENT" must exist in the Keycloak realm
-                org.keycloak.representations.idm.RoleRepresentation patientRole = keycloak.realm(realm).roles()
-                        .get("PATIENT").toRepresentation();
-
-                // Assign the role to the user
-                usersResource.get(userId).roles().realmLevel().add(Collections.singletonList(patientRole));
-            } catch (Exception e) {
-                // Log warning or throw, but user is created.
-                // Best to ensure role exists. For now, we'll propagate error if role fails as
-                // it is critical for login access.
-                throw new RuntimeException("User created but failed to assign PATIENT role: " + e.getMessage());
-            }
+            // COMMENTED OUT: Manual role assignment requested
+            /*
+             * // Assign Realm Role "PATIENT"
+             * try {
+             * // Get the RoleRepresentation from the realm
+             * // Note: The role "PATIENT" must exist in the Keycloak realm
+             * org.keycloak.representations.idm.RoleRepresentation patientRole =
+             * keycloak.realm(realm).roles()
+             * .get("PATIENT").toRepresentation();
+             * 
+             * // Assign the role to the user
+             * usersResource.get(userId).roles().realmLevel().add(Collections.singletonList(
+             * patientRole));
+             * } catch (Exception e) {
+             * // Log warning or throw, but user is created.
+             * // Best to ensure role exists. For now, we'll propagate error if role fails
+             * as
+             * // it is critical for login access.
+             * throw new RuntimeException("User created but failed to assign PATIENT role: "
+             * + e.getMessage());
+             * }
+             */
 
             return userId;
         } else {

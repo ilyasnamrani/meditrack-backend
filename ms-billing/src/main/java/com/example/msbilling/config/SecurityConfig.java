@@ -28,8 +28,11 @@ public class SecurityConfig {
                                 .csrf(AbstractHttpConfigurer::disable)
                                 .cors(AbstractHttpConfigurer::disable)
                                 .authorizeHttpRequests(req -> req
-                                                .requestMatchers("/actuator/**").permitAll()
+                                                .requestMatchers("/api/billing/**")
+                                                .hasAnyRole("DOCTOR", "ADMIN", "NURSE", "SECRETARY")
+                                                .requestMatchers("/actuator/**", "/h2-console/**").permitAll()
                                                 .anyRequest().authenticated())
+                                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
                                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                                 .oauth2ResourceServer(oauth2 -> oauth2
                                                 .jwt(jwt -> jwt

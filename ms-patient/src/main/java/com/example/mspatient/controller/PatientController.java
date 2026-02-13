@@ -37,6 +37,15 @@ public class PatientController {
         return ResponseEntity.ok(patientService.getPatient(id));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<PatientDTO> searchPatient(@RequestParam String registrationNumber) {
+        PatientDTO patient = patientService.findByRegistrationNumber(registrationNumber);
+        if (patient != null) {
+            return ResponseEntity.ok(patient);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY')")
     public ResponseEntity<PatientDTO> createPatient(@Valid @RequestBody PatientDTO patientDTO) {
