@@ -75,6 +75,9 @@ const StaffDashboard = () => {
             <h1>Tableau de Bord Staff</h1>
             <p>Bienvenue sur votre espace de gestion MediTrack.</p>
           </div>
+          <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
+            <Plus size={20} /> Nouveau Patient
+          </button>
         </header>
 
         <section className="stats-grid">

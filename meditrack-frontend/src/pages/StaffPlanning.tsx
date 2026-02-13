@@ -13,10 +13,15 @@ const StaffPlanning = () => {
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [message, setMessage] = useState('');
     const [appointments, setAppointments] = useState<any[]>([]);
+    const [patients, setPatients] = useState<any[]>([]);
+    const [doctors, setDoctors] = useState<any[]>([]);
+    const [resources, setResources] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     const [formData, setFormData] = useState({
         patientId: '',
+        doctorId: '',
+        resourceId: '',
         date: '',
         time: '',
         type: 'CONSULTATION', // enum: CONSULTATION, OPERATION, EXAMEN
@@ -24,21 +29,61 @@ const StaffPlanning = () => {
     });
 
     useEffect(() => {
-        fetchAppointments();
+        const loadInitData = async () => {
+            setLoading(true);
+            await Promise.all([
+                fetchAppointments(),
+                fetchPatients(),
+                fetchDoctors(),
+                fetchResources()
+            ]);
+            setLoading(false);
+        };
+        loadInitData();
     }, []);
 
     const fetchAppointments = async () => {
         try {
-            const response = await api.get('/api/planning', {
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`
-                }
+            const response = await api.get('/api/planning/appointments', {
+                headers: { 'Authorization': `Bearer ${getToken()}` }
             });
             setAppointments(response.data);
         } catch (error) {
             console.error("Error fetching planning:", error);
-        } finally {
-            setLoading(false);
+        }
+    };
+
+    const fetchPatients = async () => {
+        try {
+            const response = await api.get('/api/patients', {
+                headers: { 'Authorization': `Bearer ${getToken()}` }
+            });
+            setPatients(response.data);
+        } catch (error) {
+            console.error("Error fetching patients:", error);
+        }
+    };
+
+    const fetchDoctors = async () => {
+        try {
+            const response = await api.get('/api/staff', {
+                headers: { 'Authorization': `Bearer ${getToken()}` }
+            });
+            // Filter to only show staff with DOCTOR role if possible, or just show all
+            setDoctors(response.data);
+        } catch (error) {
+            console.error("Error fetching doctors:", error);
+        }
+    };
+
+    const fetchResources = async () => {
+        try {
+            const response = await api.get('/api/planning/resources', {
+                headers: { 'Authorization': `Bearer ${getToken()}` }
+            });
+            setResources(response.data);
+        } catch (error) {
+            console.error("Error fetching resources:", error);
         }
     };
 
@@ -47,12 +92,19 @@ const StaffPlanning = () => {
         setStatus('loading');
 
         // Combine date and time
-        const dateTime = `${formData.date}T${formData.time}:00`;
+        const startTime = `${formData.date}T${formData.time}:00`;
+        // Default appointment duration: 30 minutes
+        const start = new Date(startTime);
+        const end = new Date(start.getTime() + 30 * 60000);
+        const endTime = end.toISOString().split('.')[0];
 
         try {
-            await api.post('/api/planning', {
+            await api.post('/api/planning/appointments', {
                 patientId: Number(formData.patientId),
-                startTime: dateTime,
+                doctorId: Number(formData.doctorId),
+                resourceId: Number(formData.resourceId),
+                startTime: startTime,
+                endTime: endTime,
                 type: formData.type,
                 status: formData.status
             }, {
@@ -67,7 +119,7 @@ const StaffPlanning = () => {
             setTimeout(() => {
                 setIsModalOpen(false);
                 setStatus('idle');
-                setFormData({ patientId: '', date: '', time: '', type: 'CONSULTATION', status: 'SCHEDULED' });
+                setFormData({ patientId: '', doctorId: '', resourceId: '', date: '', time: '', type: 'CONSULTATION', status: 'SCHEDULED' });
             }, 2000);
         } catch (err: any) {
             setStatus('error');
@@ -136,8 +188,34 @@ const StaffPlanning = () => {
                             ) : (
                                 <form onSubmit={handleSubmit} className="modal-form">
                                     <div className="form-group">
-                                        <label>ID Patient</label>
-                                        <input type="number" required value={formData.patientId} onChange={(e) => setFormData({ ...formData, patientId: e.target.value })} placeholder="Ex: 123" />
+                                        <label>Patient</label>
+                                        <select required value={formData.patientId} onChange={(e) => setFormData({ ...formData, patientId: e.target.value })}>
+                                            <option value="">Sélectionnez un patient</option>
+                                            {patients.map(p => (
+                                                <option key={p.id} value={p.id}>{p.firstName} {p.lastName} ({p.registrationNumber})</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label>Médecin</label>
+                                            <select required value={formData.doctorId} onChange={(e) => setFormData({ ...formData, doctorId: e.target.value })}>
+                                                <option value="">Sélectionnez un médecin</option>
+                                                {doctors.map(d => (
+                                                    <option key={d.id} value={d.id}>Dr. {d.firstName} {d.lastName} ({d.role})</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Ressource (Salle/Equipement)</label>
+                                            <select required value={formData.resourceId} onChange={(e) => setFormData({ ...formData, resourceId: e.target.value })}>
+                                                <option value="">Sélectionnez une ressource</option>
+                                                {resources.map(r => (
+                                                    <option key={r.id} value={r.id}>{r.name} ({r.type})</option>
+                                                ))}
+                                            </select>
+                                        </div>
                                     </div>
 
                                     <div className="form-row">

@@ -25,8 +25,9 @@ public class BillingService {
         invoice.setPatientId(invoiceDTO.getPatientId());
         invoice.setAppointmentId(invoiceDTO.getAppointmentId());
         invoice.setAmount(invoiceDTO.getAmount());
-        invoice.setStatus("PENDING");
+        invoice.setStatus(invoiceDTO.getStatus() != null ? invoiceDTO.getStatus() : "PENDING");
         invoice.setIssueDate(LocalDateTime.now());
+        invoice.setDueDate(invoiceDTO.getDueDate());
 
         Invoice savedInvoice = invoiceRepository.save(invoice);
         return mapToDTO(savedInvoice);
@@ -81,6 +82,7 @@ public class BillingService {
                 .amount(invoice.getAmount())
                 .status(invoice.getStatus())
                 .issueDate(invoice.getIssueDate())
+                .dueDate(invoice.getDueDate())
                 .build();
     }
 }

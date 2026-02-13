@@ -13,17 +13,31 @@ const StaffAlerts = () => {
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [message, setMessage] = useState('');
     const [alerts, setAlerts] = useState<any[]>([]);
+    const [patients, setPatients] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     const [formData, setFormData] = useState({
-        patientId: '',
+        targetUserId: '',
+        title: 'Alerte Médicale',
         message: '',
         level: 'INFO' // CRITICAL, WARNING, INFO
     });
 
     useEffect(() => {
         fetchAlerts();
+        fetchPatients();
     }, []);
+
+    const fetchPatients = async () => {
+        try {
+            const response = await api.get('/api/patients', {
+                headers: { 'Authorization': `Bearer ${getToken()}` }
+            });
+            setPatients(response.data);
+        } catch (error) {
+            console.error("Error fetching patients:", error);
+        }
+    };
 
     const fetchAlerts = async () => {
         try {
@@ -46,7 +60,8 @@ const StaffAlerts = () => {
 
         try {
             await api.post('/api/alerts', {
-                patientId: Number(formData.patientId),
+                targetUserId: Number(formData.targetUserId),
+                title: formData.title,
                 message: formData.message,
                 level: formData.level
             }, {
@@ -61,7 +76,7 @@ const StaffAlerts = () => {
             setTimeout(() => {
                 setIsModalOpen(false);
                 setStatus('idle');
-                setFormData({ patientId: '', message: '', level: 'INFO' });
+                setFormData({ targetUserId: '', title: 'Alerte Médicale', message: '', level: 'INFO' });
             }, 2000);
         } catch (err: any) {
             setStatus('error');
@@ -107,7 +122,7 @@ const StaffAlerts = () => {
                                     <div className="alert-footer">
                                         <div className="alert-row">
                                             <User size={16} />
-                                            <span>Patient ID: {alert.patientId}</span>
+                                            <span>Patient ID: {alert.targetUserId}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -132,8 +147,18 @@ const StaffAlerts = () => {
                             ) : (
                                 <form onSubmit={handleSubmit} className="modal-form">
                                     <div className="form-group">
-                                        <label>ID Patient</label>
-                                        <input type="number" required value={formData.patientId} onChange={(e) => setFormData({ ...formData, patientId: e.target.value })} placeholder="Ex: 123" />
+                                        <label>Patient / Utilisateur</label>
+                                        <select required value={formData.targetUserId} onChange={(e) => setFormData({ ...formData, targetUserId: e.target.value })}>
+                                            <option value="">Sélectionnez un patient</option>
+                                            {patients.map(p => (
+                                                <option key={p.id} value={p.id}>{p.firstName} {p.lastName} ({p.registrationNumber})</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Titre</label>
+                                        <input type="text" required value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} placeholder="Ex: Alerte Rythme Cardiaque" />
                                     </div>
 
                                     <div className="form-group">

@@ -18,7 +18,6 @@ public class InvoiceDTO {
     @NotNull(message = "Patient ID is required")
     private Long patientId;
 
-    @NotNull(message = "Appointment ID is required")
     private Long appointmentId;
 
     @NotNull(message = "Amount is required")
@@ -27,4 +26,5 @@ public class InvoiceDTO {
 
     private String status;
     private LocalDateTime issueDate;
+    private LocalDateTime dueDate;
 }

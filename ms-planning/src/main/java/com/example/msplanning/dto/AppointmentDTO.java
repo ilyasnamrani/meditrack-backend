@@ -12,4 +12,6 @@ public class AppointmentDTO {
     private LocalDateTime endTime;
     private Long resourceId;
     private String resourceName;
+    private String type;
+    private String status;
 }

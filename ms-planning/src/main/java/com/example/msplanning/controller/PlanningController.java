@@ -26,6 +26,12 @@ public class PlanningController {
         return ResponseEntity.ok(planningService.getAllResources());
     }
 
+    @GetMapping("/appointments")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY')")
+    public ResponseEntity<List<AppointmentDTO>> getAllAppointments() {
+        return ResponseEntity.ok(planningService.getAllAppointments());
+    }
+
     @PostMapping("/resources")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ResourceDTO> createResource(@Valid @RequestBody ResourceDTO resourceDTO) {
@@ -41,7 +47,7 @@ public class PlanningController {
     @PutMapping("/resources/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ResourceDTO> updateResource(@PathVariable Long id,
-                                                      @Valid @RequestBody ResourceDTO resourceDTO) {
+            @Valid @RequestBody ResourceDTO resourceDTO) {
         return ResponseEntity.ok(planningService.updateResource(id, resourceDTO));
     }
 
@@ -55,7 +61,7 @@ public class PlanningController {
     @PutMapping("/appointments/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY')")
     public ResponseEntity<AppointmentDTO> updateAppointment(@PathVariable Long id,
-                                                            @Valid @RequestBody AppointmentDTO appointmentDTO) {
+            @Valid @RequestBody AppointmentDTO appointmentDTO) {
         return ResponseEntity.ok(planningService.updateAppointment(id, appointmentDTO));
     }
 

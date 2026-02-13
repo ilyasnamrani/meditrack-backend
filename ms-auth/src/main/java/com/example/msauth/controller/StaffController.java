@@ -30,7 +30,7 @@ public class StaffController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY')")
     public ResponseEntity<List<StaffDTO>> getAllStaff() {
         return ResponseEntity.ok(staffService.getAllStaff());
     }

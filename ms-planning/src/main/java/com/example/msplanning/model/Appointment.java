@@ -33,4 +33,7 @@ public class Appointment {
     @ManyToOne
     @JoinColumn(name = "resource_id")
     private Resource resource;
+
+    private String type;
+    private String status;
 }

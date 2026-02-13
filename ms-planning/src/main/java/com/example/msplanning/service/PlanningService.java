@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 @Service
 public class PlanningService {
 
-
     private final ResourceRepository resourceRepository;
     private final AppointmentRepository appointmentRepository;
     private final PatientClient patientClient;
@@ -35,11 +34,11 @@ public class PlanningService {
     private final BillingClient billingClient;
 
     public PlanningService(ResourceRepository resourceRepository,
-                           AppointmentRepository appointmentRepository,
-                           PatientClient patientClient,
-                           AuthClient authClient,
-                           AlertClient alertClient,
-                           BillingClient billingClient) {
+            AppointmentRepository appointmentRepository,
+            PatientClient patientClient,
+            AuthClient authClient,
+            AlertClient alertClient,
+            BillingClient billingClient) {
         this.resourceRepository = resourceRepository;
         this.appointmentRepository = appointmentRepository;
         this.patientClient = patientClient;
@@ -51,6 +50,12 @@ public class PlanningService {
     public List<ResourceDTO> getAllResources() {
         return resourceRepository.findAll().stream()
                 .map(this::mapToResourceDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<AppointmentDTO> getAllAppointments() {
+        return appointmentRepository.findAll().stream()
+                .map(this::mapToAppointmentDTO)
                 .collect(Collectors.toList());
     }
 
@@ -113,6 +118,8 @@ public class PlanningService {
         appointment.setStartTime(appointmentDTO.getStartTime());
         appointment.setEndTime(appointmentDTO.getEndTime());
         appointment.setResource(resource);
+        appointment.setType(appointmentDTO.getType());
+        appointment.setStatus(appointmentDTO.getStatus());
 
         Appointment savedAppointment = appointmentRepository.save(appointment);
 
@@ -207,6 +214,8 @@ public class PlanningService {
         dto.setEndTime(appointment.getEndTime());
         dto.setResourceId(appointment.getResource().getId());
         dto.setResourceName(appointment.getResource().getName());
+        dto.setType(appointment.getType());
+        dto.setStatus(appointment.getStatus());
         return dto;
     }
 }

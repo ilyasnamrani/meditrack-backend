@@ -17,7 +17,6 @@ public class Invoice {
     @NotNull(message = "Patient ID is required")
     private Long patientId;
 
-    @NotNull(message = "Appointment ID is required")
     private Long appointmentId;
 
     @NotNull(message = "Amount is required")
@@ -27,4 +26,5 @@ public class Invoice {
     private String status; // PENDING, PAID, CANCELLED
 
     private LocalDateTime issueDate;
+    private LocalDateTime dueDate;
 }

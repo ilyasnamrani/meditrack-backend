@@ -13,10 +13,12 @@ const StaffBilling = () => {
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [message, setMessage] = useState('');
     const [bills, setBills] = useState<any[]>([]);
+    const [patients, setPatients] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     const [formData, setFormData] = useState({
         patientId: '',
+        appointmentId: '',
         amount: '',
         status: 'PENDING',
         dueDate: ''
@@ -24,7 +26,19 @@ const StaffBilling = () => {
 
     useEffect(() => {
         fetchBills();
+        fetchPatients();
     }, []);
+
+    const fetchPatients = async () => {
+        try {
+            const response = await api.get('/api/patients', {
+                headers: { 'Authorization': `Bearer ${getToken()}` }
+            });
+            setPatients(response.data);
+        } catch (error) {
+            console.error("Error fetching patients:", error);
+        }
+    };
 
     const fetchBills = async () => {
         try {
@@ -48,9 +62,10 @@ const StaffBilling = () => {
         try {
             await api.post('/api/billing', {
                 patientId: Number(formData.patientId),
+                appointmentId: formData.appointmentId ? Number(formData.appointmentId) : null,
                 amount: Number(formData.amount),
                 status: formData.status,
-                dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : null
+                dueDate: formData.dueDate ? `${formData.dueDate}T00:00:00` : null
             }, {
                 headers: {
                     'Authorization': `Bearer ${getToken()}`
@@ -63,7 +78,7 @@ const StaffBilling = () => {
             setTimeout(() => {
                 setIsModalOpen(false);
                 setStatus('idle');
-                setFormData({ patientId: '', amount: '', status: 'PENDING', dueDate: '' });
+                setFormData({ patientId: '', appointmentId: '', amount: '', status: 'PENDING', dueDate: '' });
             }, 2000);
         } catch (err: any) {
             setStatus('error');
@@ -135,8 +150,18 @@ const StaffBilling = () => {
                             ) : (
                                 <form onSubmit={handleSubmit} className="modal-form">
                                     <div className="form-group">
-                                        <label>ID Patient</label>
-                                        <input type="number" required value={formData.patientId} onChange={(e) => setFormData({ ...formData, patientId: e.target.value })} placeholder="Ex: 123" />
+                                        <label>Patient</label>
+                                        <select required value={formData.patientId} onChange={(e) => setFormData({ ...formData, patientId: e.target.value })}>
+                                            <option value="">Sélectionnez un patient</option>
+                                            {patients.map(p => (
+                                                <option key={p.id} value={p.id}>{p.firstName} {p.lastName} ({p.registrationNumber})</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>ID Rendez-vous (Optionnel)</label>
+                                        <input type="number" value={formData.appointmentId} onChange={(e) => setFormData({ ...formData, appointmentId: e.target.value })} placeholder="Ex: 1" />
                                     </div>
 
                                     <div className="form-row">

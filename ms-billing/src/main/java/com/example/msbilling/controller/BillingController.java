@@ -20,32 +20,32 @@ public class BillingController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'DOCTOR', 'NURSE', 'SECRETARY')")
     public ResponseEntity<List<InvoiceDTO>> getAllInvoices() {
         return ResponseEntity.ok(billingService.getAllInvoices());
     }
 
     @GetMapping("/{id}")
     // Simplified to Role check for now as discussed
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'PATIENT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'PATIENT', 'DOCTOR', 'NURSE', 'SECRETARY')")
     public ResponseEntity<InvoiceDTO> getInvoiceById(@PathVariable Long id) {
         return ResponseEntity.ok(billingService.getInvoiceById(id));
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'DOCTOR', 'NURSE', 'SECRETARY')")
     public ResponseEntity<InvoiceDTO> createInvoice(@Valid @RequestBody InvoiceDTO invoiceDTO) {
         return ResponseEntity.ok(billingService.createInvoice(invoiceDTO));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'DOCTOR', 'NURSE', 'SECRETARY')")
     public ResponseEntity<InvoiceDTO> updateInvoice(@PathVariable Long id, @Valid @RequestBody InvoiceDTO invoiceDTO) {
         return ResponseEntity.ok(billingService.updateInvoice(id, invoiceDTO));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'SECRETARY')")
     public ResponseEntity<Void> deleteInvoice(@PathVariable Long id) {
         billingService.deleteInvoice(id);
         return ResponseEntity.noContent().build();
