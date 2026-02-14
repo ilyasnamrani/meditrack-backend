@@ -14,10 +14,11 @@ const StaffAlerts = () => {
     const [message, setMessage] = useState('');
     const [alerts, setAlerts] = useState<any[]>([]);
     const [patients, setPatients] = useState<any[]>([]);
+    const [staff, setStaff] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     const [formData, setFormData] = useState({
-        targetUserId: '',
+        patientId: '',
         title: 'Alerte Médicale',
         message: '',
         level: 'INFO' // CRITICAL, WARNING, INFO
@@ -26,7 +27,19 @@ const StaffAlerts = () => {
     useEffect(() => {
         fetchAlerts();
         fetchPatients();
+        fetchStaff();
     }, []);
+
+    const fetchStaff = async () => {
+        try {
+            const response = await api.get('/api/staff', {
+                headers: { 'Authorization': `Bearer ${getToken()}` }
+            });
+            setStaff(response.data);
+        } catch (error) {
+            console.error("Error fetching staff:", error);
+        }
+    };
 
     const fetchPatients = async () => {
         try {
@@ -54,13 +67,23 @@ const StaffAlerts = () => {
         }
     };
 
+    const getPatientName = (id: number) => {
+        const p = patients.find(p => p.id === id);
+        return p ? `${p.firstName} ${p.lastName}` : `ID: ${id}`;
+    };
+
+    const getStaffName = (staffId: string) => {
+        const s = staff.find(s => s.staffId === staffId);
+        return s ? `${s.firstName} ${s.lastName}` : `ID: ${staffId}`;
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setStatus('loading');
 
         try {
             await api.post('/api/alerts', {
-                targetUserId: Number(formData.targetUserId),
+                patientId: Number(formData.patientId),
                 title: formData.title,
                 message: formData.message,
                 level: formData.level
@@ -76,7 +99,7 @@ const StaffAlerts = () => {
             setTimeout(() => {
                 setIsModalOpen(false);
                 setStatus('idle');
-                setFormData({ targetUserId: '', title: 'Alerte Médicale', message: '', level: 'INFO' });
+                setFormData({ patientId: '', title: 'Alerte Médicale', message: '', level: 'INFO' });
             }, 2000);
         } catch (err: any) {
             setStatus('error');
@@ -120,9 +143,15 @@ const StaffAlerts = () => {
                                     </div>
                                     <p className="alert-message">{alert.message}</p>
                                     <div className="alert-footer">
-                                        <div className="alert-row">
-                                            <User size={16} />
-                                            <span>Patient ID: {alert.targetUserId}</span>
+                                        <div className="alert-row-group">
+                                            <div className="alert-row">
+                                                <User size={16} />
+                                                <span>Patient: {getPatientName(alert.patientId)}</span>
+                                            </div>
+                                            <div className="alert-row">
+                                                <User size={16} />
+                                                <span>Par: {getStaffName(alert.staffId)}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -148,7 +177,7 @@ const StaffAlerts = () => {
                                 <form onSubmit={handleSubmit} className="modal-form">
                                     <div className="form-group">
                                         <label>Patient / Utilisateur</label>
-                                        <select required value={formData.targetUserId} onChange={(e) => setFormData({ ...formData, targetUserId: e.target.value })}>
+                                        <select required value={formData.patientId} onChange={(e) => setFormData({ ...formData, patientId: e.target.value })}>
                                             <option value="">Sélectionnez un patient</option>
                                             {patients.map(p => (
                                                 <option key={p.id} value={p.id}>{p.firstName} {p.lastName} ({p.registrationNumber})</option>
@@ -219,6 +248,7 @@ const StaffAlerts = () => {
         .alert-message { font-size: 1rem; color: var(--foreground); margin-bottom: 1rem; line-height: 1.5; }
 
         .alert-footer { display: flex; align-items: center; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 0.75rem; }
+        .alert-row-group { display: flex; flex-direction: column; gap: 0.25rem; }
         .alert-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; opacity: 0.8; }
 
         /* Modal */

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { Calendar, Clock, User, AlertCircle, Loader2 } from 'lucide-react';
 import axios from 'axios';
+import { getToken } from '../services/keycloak';
 
 const api = axios.create({
     baseURL: 'http://localhost:8888', // Gateway
@@ -9,8 +10,29 @@ const api = axios.create({
 
 const PatientAppointments = () => {
     const [appointments, setAppointments] = useState<any[]>([]);
+    const [doctors, setDoctors] = useState<Record<number, string>>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+
+    const fetchDoctorNames = async (apts: any[]) => {
+        const doctorIds = [...new Set(apts.map(a => a.doctorId))];
+        const doctorMap: Record<number, string> = { ...doctors };
+
+        await Promise.all(doctorIds.map(async (id) => {
+            if (!doctorMap[id]) {
+                try {
+                    const token = getToken();
+                    const config = token ? { headers: { 'Authorization': `Bearer ${token}` } } : {};
+                    const res = await api.get(`/api/staff/${id}`, config);
+                    doctorMap[id] = `${res.data.firstName} ${res.data.lastName}`;
+                } catch (err) {
+                    console.error(`Failed to fetch doctor ${id}`, err);
+                    doctorMap[id] = `Dr. (ID: ${id})`;
+                }
+            }
+        }));
+        setDoctors(doctorMap);
+    };
 
     useEffect(() => {
         const fetchAppointments = async () => {
@@ -22,8 +44,11 @@ const PatientAppointments = () => {
             }
 
             try {
-                const response = await api.get(`/api/planning/appointments/patient/${patientDbId}`);
+                const token = getToken();
+                const config = token ? { headers: { 'Authorization': `Bearer ${token}` } } : {};
+                const response = await api.get(`/api/planning/appointments/patient/${patientDbId}`, config);
                 setAppointments(response.data);
+                await fetchDoctorNames(response.data);
             } catch (err) {
                 console.error("Error fetching appointments:", err);
                 setError("Impossible de charger vos rendez-vous.");
@@ -81,7 +106,7 @@ const PatientAppointments = () => {
                                         </div>
                                         <div className="detail-item">
                                             <User size={18} />
-                                            <span>Dr. {apt.doctorId} (ID)</span>
+                                            <span>Dr. {doctors[apt.doctorId] || apt.doctorId}</span>
                                         </div>
                                     </div>
                                 </div>

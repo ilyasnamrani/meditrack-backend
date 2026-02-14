@@ -4,6 +4,7 @@ import { Calendar, Bell, Activity, CreditCard, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { getToken } from '../services/keycloak';
 
 const api = axios.create({
   baseURL: 'http://localhost:8888',
@@ -20,7 +21,9 @@ const PatientDashboard = () => {
       if (!regId) return;
 
       try {
-        const response = await api.get(`/api/patients/search?registrationNumber=${regId}`);
+        const token = getToken();
+        const config = token ? { headers: { 'Authorization': `Bearer ${token}` } } : {};
+        const response = await api.get(`/api/patients/search?registrationNumber=${regId}`, config);
         setPatient(response.data);
       } catch (error) {
         console.error("Error fetching patient info:", error);

@@ -1,10 +1,12 @@
 package com.example.msalert.service;
 
+import com.example.msalert.client.AuthClient;
 import com.example.msalert.dto.AlertDTO;
 import com.example.msalert.model.Alert;
 import com.example.msalert.repository.AlertRepository;
-import com.example.msalert.client.AuthClient;
-import com.example.msalert.dto.StaffVO;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,14 +25,22 @@ public class AlertService {
         this.authClient = authClient;
     }
 
-    public List<AlertDTO> getAlertsForUser(Long userId) {
-        return alertRepository.findByTargetUserId(userId).stream()
+    public List<AlertDTO> getAlertsForStaff() {
+        String staffId = getCurrentUserId();
+        return alertRepository.findAllByStaffId(staffId).stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<AlertDTO> getAlertsForPatient(Long patientId) {
+        return alertRepository.findAllByPatientId(patientId).stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
     public List<AlertDTO> getAllAlerts() {
-        return alertRepository.findAll().stream()
+        String staffId = getCurrentUserId();
+        return alertRepository.findAllByStaffId(staffId).stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
@@ -47,20 +57,9 @@ public class AlertService {
         alert.setTitle(dto.getTitle());
         alert.setMessage(dto.getMessage());
         alert.setLevel(dto.getLevel());
-        alert.setTargetUserId(dto.getTargetUserId());
-
-        // Enrich dto Email from MS-Auth if not provided
-        if ((dto.getTargetEmail() == null || dto.getTargetEmail().isEmpty())
-                && dto.getTargetUserId() != null) {
-            try {
-                StaffVO staff = authClient.getStaffById(dto.getTargetUserId());
-                alert.setTargetEmail(staff.getEmail());
-            } catch (Exception e) {
-                // Log warning, proceed without email
-            }
-        } else {
-            alert.setTargetEmail(dto.getTargetEmail());
-        }
+        alert.setStaffId(getCurrentUserId() != null ? getCurrentUserId() : dto.getStaffId());
+        alert.setPatientId(dto.getPatientId());
+        alert.setTargetEmail(dto.getTargetEmail());
 
         alert.setTimestamp(LocalDateTime.now());
 
@@ -92,13 +91,22 @@ public class AlertService {
         alertRepository.deleteById(id);
     }
 
+    private String getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
+            return jwt.getClaim("sub");
+        }
+        return null;
+    }
+
     private AlertDTO mapToDTO(Alert alert) {
         AlertDTO dto = new AlertDTO();
         dto.setId(alert.getId());
         dto.setTitle(alert.getTitle());
         dto.setMessage(alert.getMessage());
         dto.setLevel(alert.getLevel());
-        dto.setTargetUserId(alert.getTargetUserId());
+        dto.setStaffId(alert.getStaffId());
+        dto.setPatientId(alert.getPatientId());
         dto.setTargetEmail(alert.getTargetEmail());
         dto.setTimestamp(alert.getTimestamp());
         dto.setRead(alert.isRead());

@@ -55,6 +55,11 @@ const StaffBilling = () => {
         }
     };
 
+    const getPatientName = (patientId: number) => {
+        const patient = patients.find(p => p.id === patientId);
+        return patient ? `${patient.firstName} ${patient.lastName}` : `ID: ${patientId}`;
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setStatus('loading');
@@ -121,7 +126,7 @@ const StaffBilling = () => {
                                     <div className="bill-body">
                                         <div className="bill-row">
                                             <User size={16} />
-                                            <span>Patient ID: {bill.patientId}</span>
+                                            <span>Patient: {getPatientName(bill.patientId)}</span>
                                         </div>
                                         <div className="bill-row">
                                             <DollarSign size={16} />

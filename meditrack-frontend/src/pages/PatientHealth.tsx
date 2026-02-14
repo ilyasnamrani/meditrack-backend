@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { Activity, Clipboard, User, Calendar, Loader2, AlertCircle } from 'lucide-react';
 import axios from 'axios';
+import { getToken } from '../services/keycloak';
 
 const api = axios.create({
     baseURL: 'http://localhost:8888', // Gateway
@@ -22,7 +23,9 @@ const PatientHealth = () => {
             }
 
             try {
-                const response = await api.get(`/api/patients/search?registrationNumber=${regId}`);
+                const token = getToken();
+                const config = token ? { headers: { 'Authorization': `Bearer ${token}` } } : {};
+                const response = await api.get(`/api/patients/search?registrationNumber=${regId}`, config);
                 setPatient(response.data);
             } catch (err) {
                 console.error("Error fetching health data:", err);

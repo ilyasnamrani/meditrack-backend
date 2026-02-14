@@ -87,6 +87,16 @@ const StaffPlanning = () => {
         }
     };
 
+    const getPatientName = (id: number) => {
+        const p = patients.find(p => p.id === id);
+        return p ? `${p.firstName} ${p.lastName}` : `ID: ${id}`;
+    };
+
+    const getDoctorName = (id: number) => {
+        const d = doctors.find(d => d.id === id);
+        return d ? `Dr. ${d.firstName} ${d.lastName}` : `Dr. ID: ${id}`;
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setStatus('loading');
@@ -159,7 +169,11 @@ const StaffPlanning = () => {
                                     <div className="apt-body">
                                         <div className="apt-row">
                                             <User size={16} />
-                                            <span>Patient ID: {apt.patientId}</span>
+                                            <span>Patient: {getPatientName(apt.patientId)}</span>
+                                        </div>
+                                        <div className="apt-row">
+                                            <User size={16} />
+                                            <span>Docteur: {getDoctorName(apt.doctorId)}</span>
                                         </div>
                                         <div className="apt-row">
                                             <Clock size={16} />

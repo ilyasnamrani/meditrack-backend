@@ -20,6 +20,8 @@ public class Appointment {
     @NotNull(message = "Doctor ID is required")
     private Long doctorId;
 
+    private String staffId; // Keycloak ID of the staff who created the appointment
+
     @NotNull(message = "Patient ID is required")
     private Long patientId;
 

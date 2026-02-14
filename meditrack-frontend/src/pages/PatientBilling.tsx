@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { CreditCard, Download, Clock, CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
 import axios from 'axios';
+import { getToken } from '../services/keycloak';
 
 const api = axios.create({
     baseURL: 'http://localhost:8888', // Gateway
@@ -22,10 +23,12 @@ const PatientBilling = () => {
             }
 
             try {
-                const response = await api.get(`/api/billing/patient/${patientDbId}`);
+                const token = getToken();
+                const config = token ? { headers: { 'Authorization': `Bearer ${token}` } } : {};
+                const response = await api.get(`/api/billing/patient/${patientDbId}`, config);
                 setInvoices(response.data);
-            } catch (err) {
-                console.error("Error fetching invoices:", err);
+            } catch (error) {
+                console.error("Error fetching invoices:", error);
                 setError("Impossible de charger vos factures.");
             } finally {
                 setLoading(false);

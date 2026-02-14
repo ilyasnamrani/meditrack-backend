@@ -25,5 +25,6 @@ public class PatientDTO {
     private String phoneNumber;
 
     private String registrationNumber;
+    private String staffId;
     private List<MedicalRecordDTO> medicalRecords;
 }

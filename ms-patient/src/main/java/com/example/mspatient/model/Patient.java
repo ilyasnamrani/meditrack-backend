@@ -36,6 +36,8 @@ public class Patient {
     @Column(unique = true)
     private String registrationNumber;
 
+    private String staffId;
+
     // Medical Record link can be implicit or explicit via another entity
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL)
     private List<MedicalRecord> medicalRecords;

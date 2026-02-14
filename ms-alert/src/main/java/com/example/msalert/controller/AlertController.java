@@ -7,8 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @RestController
 @RequestMapping("/api/alerts")
@@ -28,7 +26,7 @@ public class AlertController {
 
     @GetMapping("/patient/{patientId}")
     public ResponseEntity<List<AlertDTO>> getAlertsByPatient(@PathVariable Long patientId) {
-        return ResponseEntity.ok(alertService.getAlertsForUser(patientId));
+        return ResponseEntity.ok(alertService.getAlertsForPatient(patientId));
     }
 
     @GetMapping("/{id}")

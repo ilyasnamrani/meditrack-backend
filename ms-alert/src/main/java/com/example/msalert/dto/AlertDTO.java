@@ -18,8 +18,8 @@ public class AlertDTO {
     @NotNull(message = "Alert level is required")
     private AlertLevel level;
 
-    @NotNull(message = "Target user ID is required")
-    private Long targetUserId;
+    private String staffId;
+    private Long patientId;
 
     private String targetEmail;
     private LocalDateTime timestamp;

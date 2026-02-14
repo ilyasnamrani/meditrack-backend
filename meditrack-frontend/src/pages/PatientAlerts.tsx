@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { Bell, Info, AlertTriangle, AlertCircle, Clock, CheckCircle, Loader2 } from 'lucide-react';
 import axios from 'axios';
+import { getToken } from '../services/keycloak';
 
 const api = axios.create({
     baseURL: 'http://localhost:8888', // Gateway
@@ -9,6 +10,7 @@ const api = axios.create({
 
 const PatientAlerts = () => {
     const [alerts, setAlerts] = useState<any[]>([]);
+    const [staff, setStaff] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -22,18 +24,38 @@ const PatientAlerts = () => {
             }
 
             try {
-                const response = await api.get(`/api/alerts/patient/${patientDbId}`);
+                // Ensure patientDbId is sent as a path variable
+                const token = getToken();
+                const config = token ? { headers: { 'Authorization': `Bearer ${token}` } } : {};
+                const response = await api.get(`/api/alerts/patient/${patientDbId}`, config);
                 setAlerts(response.data);
-            } catch (err) {
-                console.error("Error fetching alerts:", err);
+            } catch (error) {
+                console.error("Error fetching alerts:", error);
                 setError("Impossible de charger vos notifications.");
             } finally {
                 setLoading(false);
             }
         };
 
+        const fetchStaff = async () => {
+            try {
+                const token = getToken();
+                const config = token ? { headers: { 'Authorization': `Bearer ${token}` } } : {};
+                const response = await api.get('/api/staff', config);
+                setStaff(response.data);
+            } catch (error) {
+                console.error("Error fetching staff:", error);
+            }
+        };
+
         fetchAlerts();
+        fetchStaff();
     }, []);
+
+    const getStaffName = (staffId: string) => {
+        const s = staff.find(s => s.staffId === staffId);
+        return s ? `${s.firstName} ${s.lastName}` : `ID: ${staffId}`;
+    };
 
     const getIcon = (level: string) => {
         switch (level) {
@@ -86,6 +108,7 @@ const PatientAlerts = () => {
                                     <p className="alert-message">{alert.message}</p>
                                     <div className="alert-footer">
                                         <span className={`level-badge level-${alert.level.toLowerCase()}`}>{alert.level}</span>
+                                        <span className="creator-info">Envoyé par: {getStaffName(alert.staffId)}</span>
                                         {alert.read && <span className="read-status"><CheckCircle size={14} /> Vu</span>}
                                     </div>
                                 </div>
@@ -184,13 +207,19 @@ const PatientAlerts = () => {
                 .level-badge.level-warning { background: #fffbeb; color: #f59e0b; }
                 .level-badge.level-critical { background: #fef2f2; color: #ef4444; }
 
-                .read-status {
+                 .read-status {
                     display: flex;
                     align-items: center;
                     gap: 0.3rem;
                     font-size: 0.8rem;
                     color: var(--success);
                     font-weight: 600;
+                }
+
+                .creator-info {
+                    font-size: 0.8rem;
+                    color: var(--muted-foreground);
+                    font-style: italic;
                 }
 
                 .loading-state, .empty-state, .error-state {

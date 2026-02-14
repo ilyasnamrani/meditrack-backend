@@ -24,6 +24,7 @@ public class Invoice {
     private BigDecimal amount;
 
     private String status; // PENDING, PAID, CANCELLED
+    private String staffId;
 
     private LocalDateTime issueDate;
     private LocalDateTime dueDate;

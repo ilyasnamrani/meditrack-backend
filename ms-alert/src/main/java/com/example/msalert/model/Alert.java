@@ -29,7 +29,9 @@ public class Alert {
     @NotNull(message = "Alert level is required") // INFO, WARNING, CRITICAL
     private AlertLevel level;
 
-    private Long targetUserId; // Staff or Patient ID
+    private String staffId; // Staff Keycloak ID
+    private Long patientId; // Patient ID as Long
+
     private String targetEmail;
 
     private LocalDateTime timestamp;

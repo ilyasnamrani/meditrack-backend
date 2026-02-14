@@ -25,6 +25,7 @@ public class InvoiceDTO {
     private BigDecimal amount;
 
     private String status;
+    private String staffId;
     private LocalDateTime issueDate;
     private LocalDateTime dueDate;
 }

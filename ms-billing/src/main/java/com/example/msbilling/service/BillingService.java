@@ -3,6 +3,9 @@ package com.example.msbilling.service;
 import com.example.msbilling.dto.InvoiceDTO;
 import com.example.msbilling.model.Invoice;
 import com.example.msbilling.model.InvoiceRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +29,7 @@ public class BillingService {
         invoice.setAppointmentId(invoiceDTO.getAppointmentId());
         invoice.setAmount(invoiceDTO.getAmount());
         invoice.setStatus(invoiceDTO.getStatus() != null ? invoiceDTO.getStatus() : "PENDING");
+        invoice.setStaffId(getCurrentUserId());
         invoice.setIssueDate(LocalDateTime.now());
         invoice.setDueDate(invoiceDTO.getDueDate());
 
@@ -57,9 +61,18 @@ public class BillingService {
     }
 
     public List<InvoiceDTO> getAllInvoices() {
-        return invoiceRepository.findAll().stream()
+        String staffId = getCurrentUserId();
+        return invoiceRepository.findAllByStaffId(staffId).stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
+    }
+
+    private String getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
+            return jwt.getClaim("sub");
+        }
+        return null;
     }
 
     public InvoiceDTO getInvoiceById(Long id) {
@@ -81,6 +94,7 @@ public class BillingService {
                 .appointmentId(invoice.getAppointmentId())
                 .amount(invoice.getAmount())
                 .status(invoice.getStatus())
+                .staffId(invoice.getStaffId())
                 .issueDate(invoice.getIssueDate())
                 .dueDate(invoice.getDueDate())
                 .build();

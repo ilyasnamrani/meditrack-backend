@@ -10,12 +10,12 @@ import {
   Mail,
   Phone,
   Calendar as CalendarIcon,
-  Loader2
+  Loader2,
+  CheckCircle
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { getToken } from '../services/keycloak';
-
 
 const api = axios.create({
   baseURL: 'http://localhost:8888', // Gateway
@@ -33,10 +33,49 @@ const StaffDashboard = () => {
     phoneNumber: ''
   });
 
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const [alerts, setAlerts] = useState<any[]>([]);
+  const [patients, setPatients] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [aptRes, alertRes, patientRes, staffRes] = await Promise.all([
+          api.get('/api/planning/appointments', { headers: { 'Authorization': `Bearer ${getToken()}` } }),
+          api.get('/api/alerts', { headers: { 'Authorization': `Bearer ${getToken()}` } }),
+          api.get('/api/patients', { headers: { 'Authorization': `Bearer ${getToken()}` } }),
+          api.get('/api/staff', { headers: { 'Authorization': `Bearer ${getToken()}` } })
+        ]);
+        setAppointments(aptRes.data.slice(0, 5)); // Limit to most recent
+        setAlerts(alertRes.data.slice(0, 5));
+        setPatients(patientRes.data);
+        setDoctors(staffRes.data);
+      } catch (err) {
+        console.error("Error fetching dashboard data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const getPatientName = (id: number) => {
+    const p = patients.find(p => p.id === id);
+    return p ? `${p.firstName} ${p.lastName}` : `ID: ${id}`;
+  };
+
+  const [doctors, setDoctors] = useState<any[]>([]);
+
+  const getDoctorName = (id: number) => {
+    const d = doctors.find(d => d.id === id);
+    return d ? `Dr. ${d.firstName} ${d.lastName}` : `Dr. ID: ${id}`;
+  };
+
   const stats = [
-    { label: 'Patients Totaux', value: '1,284', icon: Users, color: '#3b82f6' },
-    { label: 'Rendez-vous Aujourd\'hui', value: '42', icon: Calendar, color: '#10b981' },
-    { label: 'Alertes Critiques', value: '7', icon: AlertTriangle, color: '#ef4444' },
+    { label: 'Patients Totaux', value: patients.length.toString(), icon: Users, color: '#3b82f6' },
+    { label: 'Rendez-vous Aujourd\'hui', value: appointments.length.toString(), icon: Calendar, color: '#10b981' },
+    { label: 'Alertes Critiques', value: alerts.filter(a => a.level === 'CRITICAL').length.toString(), icon: AlertTriangle, color: '#ef4444' },
     { label: 'Taux d\'Occupation', value: '88%', icon: TrendingUp, color: '#f59e0b' },
   ];
 
@@ -46,7 +85,6 @@ const StaffDashboard = () => {
     try {
       const response = await api.post('/api/patients', formData, {
         headers: {
-          // In a real app, the token would be added by an interceptor
           'Authorization': `Bearer ${getToken()}`
         }
       });
@@ -100,36 +138,36 @@ const StaffDashboard = () => {
               <h2>Prochains Rendez-vous</h2>
               <button className="btn-text">Tout voir</button>
             </div>
-            <table>
-              <thead>
-                <tr>
-                  <th>Patient</th>
-                  <th>Heure</th>
-                  <th>Type</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Jean Dupont</td>
-                  <td>09:30</td>
-                  <td>Consultation Générale</td>
-                  <td><span className="badge badge-success">Confirmé</span></td>
-                </tr>
-                <tr>
-                  <td>Marie Curie</td>
-                  <td>10:15</td>
-                  <td>Examen Radio</td>
-                  <td><span className="badge badge-warning">En attente</span></td>
-                </tr>
-                <tr>
-                  <td>Robert Junior</td>
-                  <td>11:00</td>
-                  <td>Suivi Post-Op</td>
-                  <td><span className="badge badge-success">Confirmé</span></td>
-                </tr>
-              </tbody>
-            </table>
+            {loading ? (
+              <div className="loading-state"><Loader2 className="spin" /></div>
+            ) : (
+              <table>
+                <thead>
+                  <tr>
+                    <th>Patient</th>
+                    <th>Docteur</th>
+                    <th>Heure</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {appointments.length === 0 ? (
+                    <tr><td colSpan={5}>Aucun rendez-vous prévu</td></tr>
+                  ) : (
+                    appointments.map(apt => (
+                      <tr key={apt.id}>
+                        <td>{getPatientName(apt.patientId)}</td>
+                        <td>{getDoctorName(apt.doctorId)}</td>
+                        <td>{new Date(apt.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                        <td>{apt.type}</td>
+                        <td><span className={`badge badge-${apt.status === 'SCHEDULED' ? 'warning' : 'success'}`}>{apt.status}</span></td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
 
           <div className="data-card alerts-panel">
@@ -137,20 +175,27 @@ const StaffDashboard = () => {
               <h2>Alertes Récentes</h2>
             </div>
             <div className="alert-list">
-              <div className="alert-item critical">
-                <div className="alert-dot"></div>
-                <div className="alert-info">
-                  <p className="alert-msg">Température élevée - Ch. 302</p>
-                  <span className="alert-time">Il y a 5 min</span>
-                </div>
-              </div>
-              <div className="alert-item warning">
-                <div className="alert-dot"></div>
-                <div className="alert-info">
-                  <p className="alert-msg">Rappel médicament - Ch. 105</p>
-                  <span className="alert-time">Il y a 12 min</span>
-                </div>
-              </div>
+              {loading ? (
+                <div className="loading-state"><Loader2 className="spin" /></div>
+              ) : alerts.length === 0 ? (
+                <p>Aucune alerte récente</p>
+              ) : (
+                alerts.map(alert => (
+                  <div key={alert.id} className={`alert-item ${alert.level.toLowerCase()}`}>
+                    <div className="alert-dot"></div>
+                    <div className="alert-info">
+                      <p className="alert-msg">{alert.message}</p>
+                      <span className="alert-patient" style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                        {getPatientName(alert.patientId)}
+                      </span>
+                      <br />
+                      <span className="alert-time">
+                        {new Date(alert.timestamp || Date.now()).toLocaleTimeString()}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -165,7 +210,7 @@ const StaffDashboard = () => {
 
               {status === 'success' ? (
                 <div className="success-message">
-                  <Users size={48} />
+                  <CheckCircle size={48} />
                   <p>{message}</p>
                 </div>
               ) : (
@@ -386,6 +431,7 @@ const StaffDashboard = () => {
 
         .critical .alert-dot { background: var(--danger); }
         .warning .alert-dot { background: var(--warning); }
+        .info .alert-dot { background: var(--primary); }
 
         .alert-msg { font-size: 0.9rem; font-weight: 500; }
         .alert-time { font-size: 0.75rem; color: var(--muted-foreground); }
@@ -479,6 +525,12 @@ const StaffDashboard = () => {
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
+        }
+
+        .loading-state {
+          display: flex;
+          justify-content: center;
+          padding: 2rem;
         }
       `}</style>
     </DashboardLayout>

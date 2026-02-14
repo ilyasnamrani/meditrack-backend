@@ -7,6 +7,9 @@ import com.example.mspatient.model.Patient;
 import com.example.mspatient.repository.MedicalRecordRepository;
 import com.example.mspatient.repository.PatientRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +33,8 @@ public class PatientService {
     }
 
     public List<PatientDTO> getAllPatients() {
-        return patientRepository.findAll().stream()
+        String staffId = getCurrentUserId();
+        return patientRepository.findAllByStaffId(staffId).stream()
                 .map(this::mapToPatientDTO)
                 .collect(Collectors.toList());
     }
@@ -62,6 +66,7 @@ public class PatientService {
         // Generate Registration Number
         String registrationNumber = generateRegistrationNumber();
         patient.setRegistrationNumber(registrationNumber);
+        patient.setStaffId(getCurrentUserId());
 
         // Create User in Keycloak
         // Default password or generated one. For simplicity, using "password" or
@@ -86,6 +91,14 @@ public class PatientService {
 
         Patient savedPatient = patientRepository.save(patient);
         return mapToPatientDTO(savedPatient);
+    }
+
+    private String getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
+            return jwt.getClaim("sub");
+        }
+        return null;
     }
 
     private String generateRegistrationNumber() {
@@ -145,6 +158,7 @@ public class PatientService {
         dto.setEmail(patient.getEmail());
         dto.setPhoneNumber(patient.getPhoneNumber());
         dto.setRegistrationNumber(patient.getRegistrationNumber());
+        dto.setStaffId(patient.getStaffId());
         if (patient.getMedicalRecords() != null) {
             dto.setMedicalRecords(patient.getMedicalRecords().stream()
                     .map(this::mapToRecordDTO)
