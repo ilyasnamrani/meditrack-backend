@@ -27,6 +27,7 @@ const PatientLogin = () => {
                 setMessage('Identification réussie. Chargement de votre espace...');
                 // Store the registration ID for the dashboard to use (mock authentication)
                 localStorage.setItem('patient_id', registrationId);
+                localStorage.setItem('patient_db_id', response.data.id.toString());
 
                 setTimeout(() => {
                     navigate('/patient');

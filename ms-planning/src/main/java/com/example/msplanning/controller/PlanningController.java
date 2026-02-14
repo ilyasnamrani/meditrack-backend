@@ -32,6 +32,11 @@ public class PlanningController {
         return ResponseEntity.ok(planningService.getAllAppointments());
     }
 
+    @GetMapping("/appointments/patient/{patientId}")
+    public ResponseEntity<List<AppointmentDTO>> getAppointmentsByPatient(@PathVariable Long patientId) {
+        return ResponseEntity.ok(planningService.getAppointmentsByPatientId(patientId));
+    }
+
     @PostMapping("/resources")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ResourceDTO> createResource(@Valid @RequestBody ResourceDTO resourceDTO) {

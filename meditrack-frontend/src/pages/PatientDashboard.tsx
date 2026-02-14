@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { Calendar, FileText, Bell, Activity, Clock, CreditCard, Loader2 } from 'lucide-react';
+import { Calendar, Bell, Activity, CreditCard, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const api = axios.create({
@@ -11,6 +12,7 @@ const api = axios.create({
 const PatientDashboard = () => {
   const [patient, setPatient] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPatientData = async () => {
@@ -64,17 +66,21 @@ const PatientDashboard = () => {
           </div>
 
           <div className="quick-actions">
-            <motion.div whileHover={{ scale: 1.02 }} className="action-card">
-              <Clock size={24} />
-              <span>Historique</span>
+            <motion.div whileHover={{ scale: 1.02 }} className="action-card" onClick={() => navigate('/patient/appointments')}>
+              <Calendar size={24} />
+              <span>Rendez-vous</span>
             </motion.div>
-            <motion.div whileHover={{ scale: 1.02 }} className="action-card">
-              <FileText size={24} />
-              <span>Documents</span>
+            <motion.div whileHover={{ scale: 1.02 }} className="action-card" onClick={() => navigate('/patient/health')}>
+              <Activity size={24} />
+              <span>Dossier Santé</span>
             </motion.div>
-            <motion.div whileHover={{ scale: 1.02 }} className="action-card">
+            <motion.div whileHover={{ scale: 1.02 }} className="action-card" onClick={() => navigate('/patient/billing')}>
               <CreditCard size={24} />
               <span>Facturation</span>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.02 }} className="action-card" onClick={() => navigate('/patient/alerts')}>
+              <Bell size={24} />
+              <span>Notifications</span>
             </motion.div>
           </div>
 

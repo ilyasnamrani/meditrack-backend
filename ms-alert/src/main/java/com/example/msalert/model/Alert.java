@@ -26,7 +26,7 @@ public class Alert {
     @NotBlank(message = "Message is required")
     private String message;
 
-    @NotNull(message = "Alert level is required") // INFO, WARNING, URGENT
+    @NotNull(message = "Alert level is required") // INFO, WARNING, CRITICAL
     private AlertLevel level;
 
     private Long targetUserId; // Staff or Patient ID

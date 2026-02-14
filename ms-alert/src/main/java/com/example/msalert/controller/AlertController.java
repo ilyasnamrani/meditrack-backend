@@ -26,6 +26,11 @@ public class AlertController {
         return ResponseEntity.ok(alertService.getAllAlerts());
     }
 
+    @GetMapping("/patient/{patientId}")
+    public ResponseEntity<List<AlertDTO>> getAlertsByPatient(@PathVariable Long patientId) {
+        return ResponseEntity.ok(alertService.getAlertsForUser(patientId));
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY')")
     public ResponseEntity<AlertDTO> getAlertById(@PathVariable Long id) {

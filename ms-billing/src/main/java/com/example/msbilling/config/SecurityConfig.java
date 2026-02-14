@@ -28,6 +28,7 @@ public class SecurityConfig {
                                 .csrf(AbstractHttpConfigurer::disable)
                                 .cors(AbstractHttpConfigurer::disable)
                                 .authorizeHttpRequests(req -> req
+                                                .requestMatchers("/api/billing/patient/**").permitAll()
                                                 .requestMatchers("/api/billing/**")
                                                 .hasAnyRole("DOCTOR", "ADMIN", "NURSE", "SECRETARY")
                                                 .requestMatchers("/actuator/**", "/h2-console/**").permitAll()

@@ -8,6 +8,10 @@ import StaffAlerts from './pages/StaffAlerts';
 import StaffLogin from './pages/StaffLogin';
 import PatientDashboard from './pages/PatientDashboard';
 import PatientLogin from './pages/PatientLogin';
+import PatientAppointments from './pages/PatientAppointments';
+import PatientHealth from './pages/PatientHealth';
+import PatientAlerts from './pages/PatientAlerts';
+import PatientBilling from './pages/PatientBilling';
 import Register from './pages/Register';
 import RoleRedirect from './components/RoleRedirect';
 import { isLoggedIn } from './services/keycloak';
@@ -82,10 +86,42 @@ function App() {
         />
 
         <Route
-          path="/patient/*"
+          path="/patient"
           element={
             <ProtectedRoute>
               <PatientDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/patient/appointments"
+          element={
+            <ProtectedRoute>
+              <PatientAppointments />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/patient/health"
+          element={
+            <ProtectedRoute>
+              <PatientHealth />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/patient/alerts"
+          element={
+            <ProtectedRoute>
+              <PatientAlerts />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/patient/billing"
+          element={
+            <ProtectedRoute>
+              <PatientBilling />
             </ProtectedRoute>
           }
         />

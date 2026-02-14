@@ -29,6 +29,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req -> req
+                        .requestMatchers("/api/alerts/patient/**").permitAll()
                         .requestMatchers("/api/alerts/**").hasAnyRole("DOCTOR", "ADMIN", "NURSE", "SECRETARY")
                         .requestMatchers("/actuator/**", "/h2-console/**").permitAll()
                         .anyRequest().authenticated())

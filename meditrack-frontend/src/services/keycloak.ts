@@ -116,7 +116,7 @@ const parseJwt = (token: string) => {
 
 export const getUsername = () => {
   const token = getToken();
-  if (!token) return null;
+  if (!token) return localStorage.getItem(PATIENT_ID_KEY);
   return parseJwt(token)?.preferred_username;
 };
 
@@ -146,7 +146,7 @@ export const hasRole = (roles: string[]) => {
 
 export const isStaff = () => {
   const roles = getUserRoles();
-  return roles.includes('DOCTOR') || roles.includes('NURSE') || roles.includes('ADMIN');
+  return roles.includes('DOCTOR') || roles.includes('NURSE') || roles.includes('ADMIN') || roles.includes('SECRETARY');
 };
 
 export const isPatient = () => {

@@ -59,6 +59,12 @@ public class PlanningService {
                 .collect(Collectors.toList());
     }
 
+    public List<AppointmentDTO> getAppointmentsByPatientId(Long patientId) {
+        return appointmentRepository.findByPatientId(patientId).stream()
+                .map(this::mapToAppointmentDTO)
+                .collect(Collectors.toList());
+    }
+
     public ResourceDTO createResource(ResourceDTO resourceDTO) {
         Resource resource = new Resource();
         resource.setName(resourceDTO.getName());
