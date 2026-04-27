@@ -41,9 +41,9 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().requestMatchers("/api/staff/register", "/api/staff/ping", "/error",
-                "/actuator/**", "/h2-console/**");
-    }
+//    @Bean
+//    public WebSecurityCustomizer webSecurityCustomizer() {
+//        return (web) -> web.ignoring().requestMatchers("/api/staff/register", "/api/staff/ping", "/error",
+//                "/actuator/**", "/h2-console/**");
+//    }
 }

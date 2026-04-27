@@ -1,5 +1,0 @@
-    public StaffDTO getStaffById(Long id) {
-        Staff staff = staffRepository.findById(id)
-                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Staff not found"));
-        return mapToDTO(staff);
-    }

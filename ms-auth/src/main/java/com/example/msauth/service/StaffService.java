@@ -81,8 +81,7 @@ public class StaffService {
                         staffDTO.getPassword() // Only updates if not null/empty
                 );
             } catch (Exception e) {
-                // Log error but maybe don't fail the whole transaction if keycloak is down?
-                // For strict consistency, we should fail.
+
                 throw new RuntimeException("Error updating user in Keycloak: " + e.getMessage());
             }
         }
@@ -100,8 +99,7 @@ public class StaffService {
             try {
                 keycloakService.deleteUser(staff.getKeycloakId());
             } catch (Exception e) {
-                // Proceed with local delete even if Keycloak fails? Or strict consistency?
-                // Going with strict to avoid orphans, but wrapping in runtime exception
+
                 throw new RuntimeException("Error deleting user from Keycloak: " + e.getMessage());
             }
         }

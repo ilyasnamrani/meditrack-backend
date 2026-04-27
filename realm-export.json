@@ -49,7 +49,7 @@
             ]
         },
         {
-            "clientId": "meditrack-web",
+            "clientId": "meditrack-client",
             "enabled": true,
             "publicClient": true,
             "standardFlowEnabled": true,
